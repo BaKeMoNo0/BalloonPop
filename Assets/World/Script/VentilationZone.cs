@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class VentZone : MonoBehaviour
 {
-    private bool isRightSide = false;
+    public bool isRightSide = false;
     private float windForce = 20f;
     private void OnTriggerStay(Collider other)
     {

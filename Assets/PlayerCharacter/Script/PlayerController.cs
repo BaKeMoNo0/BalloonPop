@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour
     private const float BoostAcceleration = 20f;
     private const float BoostDecay = 30f;
     private bool isInPipe = false;
-    private const float StuckThreshold = 0.2f;
+    private const float StuckThreshold = 0.3f;
     
     public GameObject explosionEffect;
 
@@ -48,7 +48,7 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(Vector3.up * LiftForce, ForceMode.Force);
         HandleMovement();
         if (rb.velocity.y > MaxSpeed) rb.velocity = new Vector3(rb.velocity.x, MaxSpeed, rb.velocity.z);
-        StartCoroutine(ExplodeIfStuck(3f, transform.position.y));
+        StartCoroutine(ExplodeIfStuck(3f));
     }
     
     private void Update()
@@ -59,20 +59,17 @@ public class PlayerController : MonoBehaviour
     
     private void HandleMovement()
     {
-        if (inputManager && inputManager.isTouching && inputManager.currentTouchPosition.HasValue) 
+        if (!isInPipe && inputManager && inputManager.isTouching && inputManager.currentTouchPosition.HasValue) 
         {
             Vector2 balloonScreenPos = mainCamera.WorldToScreenPoint(transform.position);
             Vector2 touchPos = inputManager.currentTouchPosition.Value;
             float horizontalDistance = Mathf.Abs(balloonScreenPos.x - touchPos.x);
 
-            if (horizontalDistance <= 50f && transform.localScale.x > MinScale)
-            {
+            if (horizontalDistance <= 50f && transform.localScale.x > MinScale) {
                 verticalBoostSpeed += BoostAcceleration * Time.fixedDeltaTime;
                 verticalBoostSpeed = Mathf.Clamp(verticalBoostSpeed, 0f, MaxSpeed);
                 rb.AddForce(Vector3.up * verticalBoostSpeed, ForceMode.Force);
-            } 
-            else 
-            {
+            } else {
                 verticalBoostSpeed = Mathf.MoveTowards(verticalBoostSpeed, 0f, BoostDecay * Time.fixedDeltaTime);
                 float direction = balloonScreenPos.x - touchPos.x;
                 float horizontalDir = Mathf.Clamp(direction, -1f, 1f);
@@ -81,7 +78,7 @@ public class PlayerController : MonoBehaviour
                 
                 HandleRotation(horizontalDir);
             }
-        } else if (!isInPipe) {
+        } else {
             HandleRotation(0f);
         }
     }
@@ -98,12 +95,9 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 scaleChange = Vector3.zero;
 
-        if (inputManager && inputManager.isTouching && inputManager.currentTouchPosition.HasValue)
-        {
+        if (inputManager && inputManager.isTouching && inputManager.currentTouchPosition.HasValue) {
             scaleChange = -Vector3.one * (DeflateSpeed * Time.deltaTime);
-        }
-        else if (!isInPipe)
-        {
+        } else if (!isInPipe) {
             scaleChange = Vector3.one * (InflateSpeed * Time.deltaTime);
         }
 
@@ -122,7 +116,7 @@ public class PlayerController : MonoBehaviour
     }
     
     
-    private void Explode()
+    public void Explode()
     {
         if (hasExploded) return;
         hasExploded = true;
@@ -143,13 +137,27 @@ public class PlayerController : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    private System.Collections.IEnumerator ExplodeIfStuck(float delay, float posY)
+    private System.Collections.IEnumerator ExplodeIfStuck(float delay)
     {
-        yield return new WaitForSeconds(delay);
-        float currentY = transform.position.y;
-        if (Mathf.Abs(currentY - posY) <= StuckThreshold) Explode();
+        Vector3 lastPosition = transform.position;
+        float stuckTime = 0f;
+
+        while (stuckTime < delay) {
+            yield return new WaitForSeconds(0.1f);
+
+            float distance = Mathf.Abs(transform.position.y - lastPosition.y);
+        
+            if (distance > StuckThreshold) {
+                stuckTime = 0f;
+                lastPosition = transform.position;
+            } else {
+                stuckTime += 0.1f;
+            }
+        }
+        Explode();
     }
     
-    public void ApplyBoost(float boostSpeed) { rb.AddForce(Vector3.up * boostSpeed, ForceMode.Impulse);} 
+    public void ApplyBoostUp(float boostSpeed) { rb.AddForce(Vector3.up * boostSpeed, ForceMode.Impulse);} 
+    public void ApplyBoostDown(float boostSpeed) { rb.AddForce(Vector3.down * boostSpeed, ForceMode.Impulse);} 
     public void SetIsInPipe(bool isEntered) { isInPipe = isEntered; }
 }
