@@ -5,8 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - lb_bird
-  - lb_perchTarget
-  - lb_groundTarget
+  - Building
+  - Cloud
   layers:
   - Default
   - TransparentFX

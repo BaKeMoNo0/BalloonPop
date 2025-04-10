@@ -10,8 +10,8 @@ public class PlayerController : MonoBehaviour
     private new Collider collider;
 
 
-    private const float SideForce = 15f;
-    private const float LiftForce = 6f;
+    private float sideForce = 15f;
+    private float liftForce = 6f;
 
     private const float DeflateSpeed = 1f;
     private const float InflateSpeed = 0.4f;
@@ -45,7 +45,7 @@ public class PlayerController : MonoBehaviour
     {
         if (hasExploded) return;
 
-        rb.AddForce(Vector3.up * LiftForce, ForceMode.Force);
+        rb.AddForce(Vector3.up * liftForce, ForceMode.Force);
         HandleMovement();
         if (rb.velocity.y > MaxSpeed) rb.velocity = new Vector3(rb.velocity.x, MaxSpeed, rb.velocity.z);
         StartCoroutine(ExplodeIfStuck(3f));
@@ -74,7 +74,7 @@ public class PlayerController : MonoBehaviour
                 float direction = balloonScreenPos.x - touchPos.x;
                 float horizontalDir = Mathf.Clamp(direction, -1f, 1f);
                 Vector3 forceDir = new Vector3(horizontalDir, 0f, 0f);
-                rb.AddForce(forceDir * SideForce, ForceMode.Force);
+                rb.AddForce(forceDir * sideForce, ForceMode.Force);
                 
                 HandleRotation(horizontalDir);
             }
@@ -160,4 +160,8 @@ public class PlayerController : MonoBehaviour
     public void ApplyBoostUp(float boostSpeed) { rb.AddForce(Vector3.up * boostSpeed, ForceMode.Impulse);} 
     public void ApplyBoostDown(float boostSpeed) { rb.AddForce(Vector3.down * boostSpeed, ForceMode.Impulse);} 
     public void SetIsInPipe(bool isEntered) { isInPipe = isEntered; }
+    public float GetLiftForce() {return liftForce;}
+    public void SetLiftForce(float l) { this.liftForce = l; }
+    public float GetSideForce() {return sideForce;}
+    public void SetSideForce(float s) { sideForce = s; }
 }
