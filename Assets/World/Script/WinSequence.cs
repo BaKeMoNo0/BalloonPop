@@ -8,10 +8,8 @@ public class WinSequence : MonoBehaviour
     public float offsetY = 0.5f;
     public float waitTime = 5f;
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Player"))
-        {
+    private void OnTriggerEnter(Collider other) {
+        if (other.CompareTag("Player")) {
             PlayerController player = other.GetComponent<PlayerController>();
             if (!player) return;
 
@@ -20,8 +18,7 @@ public class WinSequence : MonoBehaviour
         }
     }
 
-    private void SpawnEffects()
-    {
+    private void SpawnEffects() {
         Vector3 center = transform.position;
 
         // Right
@@ -33,8 +30,7 @@ public class WinSequence : MonoBehaviour
         Instantiate(effect, center + new Vector3(-offsetX * 2, offsetY, 0), Quaternion.identity);
     }
 
-    private System.Collections.IEnumerator NextLevel(float waitTime)
-    {
+    private System.Collections.IEnumerator NextLevel(float waitTime) {
         yield return new WaitForSeconds(waitTime);
         SceneManager.LoadScene(1);
     }

@@ -1,17 +1,22 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class PlayerController : MonoBehaviour
-{
+public class PlayerController : MonoBehaviour {
     private Camera mainCamera;
     private InputManager inputManager;
     public Rigidbody rb;
     private MeshRenderer meshRenderer;
     private new Collider collider;
 
-
-    private float sideForce = 15f;
-    private float liftForce = 6f;
+    private float sideForce;
+    private float baseSideForce = 15f;
+    private const float MinSideForce = 7f;
+    private const float MaxSideForce = 20f;
+    private float liftForce;
+    private float baseLiftForce = 6f;
+    private const float MinLiftForce = 1f;
+    private const float MaxLiftForce = 12f;
 
     private const float DeflateSpeed = 1f;
     private const float InflateSpeed = 0.4f;
@@ -30,15 +35,36 @@ public class PlayerController : MonoBehaviour
     private const float StuckThreshold = 0.3f;
     
     public GameObject explosionEffect;
-
-    private void Start()
-    {
+    
+    private Coroutine speedUpRoutine;
+    private Coroutine slowDownRoutine;
+    private float speedUpMultiplier = 1f;
+    private float slowDownMultiplier = 1f;
+    
+    
+    private void Start() {
         collider = GetComponent<Collider>();
         meshRenderer = GetComponent<MeshRenderer>();
         if (!rb) rb = GetComponent<Rigidbody>();
         inputManager = FindObjectOfType<InputManager>();
         mainCamera = Camera.main;
         explosionEffect.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+        ResetForces();
+    }
+    
+    private void ResetForces() {
+        liftForce = baseLiftForce;
+        sideForce = baseSideForce;
+        ApplyCurrentMultipliers();
+    }
+    
+    private void ApplyCurrentMultipliers()
+    {
+        float finalLift = baseLiftForce * speedUpMultiplier * slowDownMultiplier;
+        float finalSide = baseSideForce * speedUpMultiplier * slowDownMultiplier;
+
+        liftForce = Mathf.Clamp(finalLift, MinLiftForce, MaxLiftForce);
+        sideForce = Mathf.Clamp(finalSide, MinSideForce, MaxSideForce);
     }
     
     void FixedUpdate()
@@ -131,13 +157,13 @@ public class PlayerController : MonoBehaviour
     }
     
     
-    private System.Collections.IEnumerator ReloadSceneAfterDelay(float delay)
+    private IEnumerator ReloadSceneAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    private System.Collections.IEnumerator ExplodeIfStuck(float delay)
+    private IEnumerator ExplodeIfStuck(float delay)
     {
         Vector3 lastPosition = transform.position;
         float stuckTime = 0f;
@@ -157,11 +183,57 @@ public class PlayerController : MonoBehaviour
         Explode();
     }
     
+    public void ApplySpeedUp(float multiplier, float duration)
+    {
+        if (speedUpRoutine != null) StopCoroutine(speedUpRoutine);
+        speedUpRoutine = StartCoroutine(SpeedUpCoroutine(multiplier, duration));
+    }
+
+    public void ApplySlowDown(float multiplier, float duration)
+    {
+        if (slowDownRoutine != null) StopCoroutine(slowDownRoutine);
+        slowDownRoutine = StartCoroutine(SlowDownCoroutine(multiplier, duration));
+    }
+    
+    private IEnumerator SpeedUpCoroutine(float multiplier, float duration)
+    {
+        speedUpMultiplier = multiplier;
+        ApplyCurrentMultipliers();
+
+        float timer = duration;
+        while (timer > 0f)
+        {
+            timer -= Time.deltaTime;
+            yield return null;
+        }
+
+        speedUpMultiplier = 1f;
+        ApplyCurrentMultipliers();
+        speedUpRoutine = null;
+    }
+    
+    private IEnumerator SlowDownCoroutine(float multiplier, float duration)
+    {
+        slowDownMultiplier = 1f / multiplier;
+        ApplyCurrentMultipliers();
+
+        float timer = duration;
+        while (timer > 0f)
+        {
+            timer -= Time.deltaTime;
+            yield return null;
+        }
+
+        slowDownMultiplier = 1f;
+        ApplyCurrentMultipliers();
+        slowDownRoutine = null;
+    }
+
+    
     public void ApplyBoostUp(float boostSpeed) { rb.AddForce(Vector3.up * boostSpeed, ForceMode.Impulse);} 
     public void ApplyBoostDown(float boostSpeed) { rb.AddForce(Vector3.down * boostSpeed, ForceMode.Impulse);} 
-    public void SetIsInPipe(bool isEntered) { isInPipe = isEntered; }
-    public float GetLiftForce() {return liftForce;}
-    public void SetLiftForce(float l) { this.liftForce = l; }
-    public float GetSideForce() {return sideForce;}
-    public void SetSideForce(float s) { sideForce = s; }
+    
+    
+    //Setter
+    public void SetIsInPipe(bool isEntered) => isInPipe = isEntered;
 }

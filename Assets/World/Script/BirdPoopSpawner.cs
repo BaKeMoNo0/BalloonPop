@@ -9,28 +9,23 @@ public class BirdPoopSpawner : MonoBehaviour
     private GameObject[] pooledPoops;
     private int currentIndex = 0;
 
-    private void Start()
-    {
+    private void Start() {
         pooledPoops = new GameObject[2];
-        for (int i = 0; i < pooledPoops.Length; i++)
-        {
+        for (int i = 0; i < pooledPoops.Length; i++) {
             pooledPoops[i] = Instantiate(poopPrefab, transform.position, Quaternion.identity);
             pooledPoops[i].SetActive(false);
         }
     }
 
-    private void Update()
-    {
+    private void Update() {
         timer += Time.deltaTime;
-        if (timer >= spawnInterval)
-        {
+        if (timer >= spawnInterval) {
             SpawnPoop();
             timer = 0f;
         }
     }
     
-    private void SpawnPoop()
-    {
+    private void SpawnPoop() {
         GameObject poop = pooledPoops[currentIndex];
         poop.transform.position = transform.position + Vector3.down * 0.2f;
         poop.SetActive(true);
@@ -40,8 +35,7 @@ public class BirdPoopSpawner : MonoBehaviour
         currentIndex = (currentIndex + 1) % pooledPoops.Length;
     }
 
-    private System.Collections.IEnumerator ResetPoop(GameObject poop, float delay)
-    {
+    private System.Collections.IEnumerator ResetPoop(GameObject poop, float delay) {
         yield return new WaitForSeconds(delay);
         poop.SetActive(false);
     }
