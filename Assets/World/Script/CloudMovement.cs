@@ -15,7 +15,7 @@ public class CloudMovement : MonoBehaviour
     
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Cloud") || other.CompareTag("Building")) direction *= -1;
+        if (other.CompareTag("Cloud") || other.CompareTag("Building") || other.CompareTag("Pipe") || other.CompareTag("lb_bird")) direction *= -1;
         
         if (other.CompareTag("Player")) {
             PlayerController player = other.GetComponent<PlayerController>();
