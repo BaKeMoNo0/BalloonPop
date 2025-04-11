@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -5,18 +6,25 @@ public class PipeZone : MonoBehaviour
 {
 
     private const float MaxBalloonScale = 2f;
-    private const float EntryPosX = 2.7f;
+    private float EntryPosX;
+    private bool hasTriggered = false;
     
     public enum PipeType { Enter, Exit }
 
     public PipeType pipeType;
     public float boostSpeed = 100f;
 
+    private void Start() {
+        EntryPosX = transform.position.x + 0.2f;
+    }
+
     private void OnTriggerEnter(Collider other) {
         if (!other.CompareTag("Player")) return;
 
         PlayerController player = other.GetComponent<PlayerController>();
         if (player == null) return;
+        
+        hasTriggered = true;
 
         if (pipeType == PipeType.Enter) {
             player.SetIsInPipe(true);
@@ -43,6 +51,7 @@ public class PipeZone : MonoBehaviour
         } else {
             AlignPlayerToPipe(player);
         }
+        hasTriggered = false;
     }
 
     private bool IsPlayerCorrectlyAligned(PlayerController player) {
