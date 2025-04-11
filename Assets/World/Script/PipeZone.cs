@@ -15,7 +15,7 @@ public class PipeZone : MonoBehaviour
     public float boostSpeed = 100f;
 
     private void Start() {
-        EntryPosX = transform.position.x + 0.2f;
+        EntryPosX = transform.position.x - 0.25f;
     }
 
     private void OnTriggerEnter(Collider other) {
